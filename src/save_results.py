@@ -20,9 +20,9 @@ from src.EDistribution import EDistribution
 
 
 save_results_config = {
-    "Ns": [200, 100, 50, 10, 5],
-    "M_N_ratios": [10, 5, 3, 2, 1],
-    "n_N_ratios": [0.01, 0.1, 0.2, 0.5, 0.8],
+    "Ks": [200, 100, 50, 10, 5],
+    "N_K_ratios": [10, 5, 3, 2, 1],
+    "n_K_ratios": [0.01, 0.1, 0.2, 0.5, 0.8],
     "rhos": [0.01, 0.1, 0.25, 0.5, 0.9, 0.99],
     "sample_size": 100_000,
 }
@@ -40,29 +40,29 @@ def save_results(
     save_path = f"{GLOBAL_PATH_TO_REPO}/data/{csv_name}.csv"
 
     index_columns = [
-        "N",
-        "n_N_ratio",
+        "K",
+        "n_K_ratio",
         "n",
-        "M_N_ratio",
+        "N_K_ratio",
         "M",
         "rho",
     ]
     columns = ["model", "R2", "MSE"]
     df = pd.DataFrame(None, columns=index_columns + columns)
 
-    Ns = config["Ns"]
-    M_N_ratios = config["M_N_ratios"]
-    n_N_ratios = config["n_N_ratios"]
+    Ks = config["Ks"]
+    N_K_ratios = config["N_K_ratios"]
+    n_K_ratios = config["n_K_ratios"]
     rhos = config["rhos"]
     sample_size = config["sample_size"]
 
     loader = tqdm(
-        product(Ns, rhos), total=len(Ns) * len(rhos)
+        product(Ks, rhos), total=len(Ks) * len(rhos)
     )
 
-    for N, rho in loader:
+    for K, rho in loader:
 
-        beta = RNG.normal(loc=0, scale=5, size=N)
+        beta = RNG.normal(loc=0, scale=5, size=K)
         X, y = get_xy_sample(
             distribution_type=distribution_type,
             beta=beta,
@@ -70,9 +70,9 @@ def save_results(
             sample_size=sample_size,
         )
 
-        for M_N_ratio in M_N_ratios:
+        for N_K_ratio in N_K_ratios:
 
-            M = N * M_N_ratio
+            M = K * N_K_ratio
 
             (
                 X_train,
@@ -86,9 +86,9 @@ def save_results(
                 train_size=M,
             )
 
-            for n_N_ratio in n_N_ratios:
+            for n_K_ratio in n_K_ratios:
 
-                n = int(np.ceil(N * n_N_ratio))
+                n = int(np.ceil(K * n_K_ratio))
 
                 score_dict = (
                     EModel.train_and_evaluate_all_models(
@@ -104,13 +104,13 @@ def save_results(
                 score_df = score_df.reset_index()
                 for col_name, value in zip(
                     index_columns,
-                    [N, n_N_ratio, n, M_N_ratio, M, rho],
+                    [K, n_K_ratio, n, N_K_ratio, M, rho],
                 ):
                     score_df[col_name] = value
                 df = pd.concat([df, score_df])
                 loader.set_postfix(
                     **score_dict["R2"]
-                    | {"rho": rho, "N": N, "n": n}
+                    | {"rho": rho, "K": K, "n": n}
                 )
 
         df.to_csv(save_path, index=False)
@@ -121,4 +121,5 @@ def save_results(
 if __name__ == "__main__":
     save_results(
         distribution_type=EDistribution.normal,
+        csv_name="hoplic",
     )

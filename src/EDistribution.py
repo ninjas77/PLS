@@ -8,7 +8,7 @@ class EDistribution(str, Enum):
 
     @staticmethod
     def get_sample(
-        N: int,
+        K: int,
         distribution_type: str,
         sample_size: int,
         rho: float,
@@ -16,10 +16,10 @@ class EDistribution(str, Enum):
     ):
 
         if distribution_type == EDistribution.normal:
-            cov = rho * np.ones([N, N])
-            cov = cov + np.diag(1 - rho * np.ones(N))
+            cov = rho * np.ones([K, K])
+            cov = cov + np.diag(1 - rho * np.ones(K))
             X = RNG.multivariate_normal(
-                mean=np.zeros(N) * mean,
+                mean=np.zeros(K) * mean,
                 cov=cov,
                 size=sample_size,
             )

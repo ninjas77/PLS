@@ -24,13 +24,13 @@ def get_xy_sample(
         tuple: X-sample, y-sample.
     """
 
-    N = beta.shape[0]
-    cov = rho * np.ones([N, N])
-    cov = cov + np.diag(1 - rho * np.ones(N))
+    K = beta.shape[0]
+    cov = rho * np.ones([K, K])
+    cov = cov + np.diag(1 - rho * np.ones(K))
 
-    N = beta.shape[0]
+    K = beta.shape[0]
     X = EDistribution.get_sample(
-        N=N,
+        K=K,
         distribution_type=distribution_type,
         sample_size=sample_size,
         rho=rho,
